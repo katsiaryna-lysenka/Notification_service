@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  user-management:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notification-service-container
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+      - rabbitmq
+      - localstack
+    volumes:
+      - .env:/app/.env
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
