@@ -1,22 +1,38 @@
 version: '3.8'
 
 services:
-  user-management:
+  notification-service:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: notification-service-container
     ports:
-      - "5000:5000"
+      - "8000:8000"
     depends_on:
       - mongodb
-      - rabbitmq
-      - localstack
+    environment:
+      - ATLAS_URI=mongodb://mongodb:27017
+      - DB_NAME=pymongo
     volumes:
       - .env:/app/.env
+    networks:
+      - backend
+
+  mongodb:
+    image: bitnami/mongodb:latest
+    container_name: mongodb-container
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=12345
+    volumes:
+      - 'mongodb_data:/bitnami/mongodb'
     networks:
       - backend
 
 networks:
   backend:
     driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
