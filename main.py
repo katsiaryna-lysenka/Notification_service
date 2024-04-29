@@ -5,13 +5,17 @@ from datetime import datetime
 from pymongo import MongoClient
 import aio_pika
 import boto3
-from src.config import settings
+from dotenv import load_dotenv
+
+load_dotenv(".env")
+
 
 MONGODB_URI = "mongodb://user:admin@mongodb:27017/"
 AWS_REGION = "us-east-1"
 AWS_SECRET_KEY_ID = os.getenv("AWS_SECRET_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-AWS_SES_SENDER = "your_ses_sender_email"
+AWS_SES_SENDER = os.getenv("AWS_SES_SENDER")
+RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
 
 
 async def process_reset_email_message(email: str, reset_token: str):
@@ -72,19 +76,50 @@ async def process_reset_email_message(email: str, reset_token: str):
 
 
 async def consume_reset_email_messages():
+    print("aaaaaaaaaaaaaaaaaaaaa")
+    connection = None
     try:
+        # connection = await aio_pika.connect_robust(
+        #     f"amqp://user:12345@{settings.rabbitmq_host}/"
+        # )
+        rabbitmq_host = os.getenv('RABBITMQ_HOST')
+        print(f"Connecting to RabbitMQ at {rabbitmq_host}")
         connection = await aio_pika.connect_robust(
-            f"amqp://user:12345@{settings.rabbitmq_host}/"
+            f"amqp://user:12345@{RABBITMQ_HOST}/"
         )
+        print("bbbbbbbbbbbbbbbbbbbbbbbbb")
+
+    except Exception as e:
+        print("Type of exception:", type(e))
+
     except aio_pika.exceptions.AMQPConnectionError as e:
+        print("cccccccccccccccccccc")
         error_message = f"Error connecting to RabbitMQ: {str(e)}"
-        return
+
+        return error_message
 
     async with connection:
+        print("dddddddddddddddddddddd")
         channel = await connection.channel()
+        print("iiiiiiiiiiiiiiiiiiiiii")
         queue = await channel.declare_queue(
             "reset-password-stream", durable=True
         )
+        print("eeeeeeeeeeeeeeeeee")
+        async for message in queue:
+            async with message.process():
+                try:
+                    message_body = json.loads(message.body)
+                    print("Received message:")
+                    print(message_body)
+
+                except json.JSONDecodeError as e:
+
+                    print("Failed to decode JSON:", e)
+
+                except Exception as e:
+
+                    print("An unexpected error occurred:", e)
 
         await queue.consume(process_reset_email_message)
 
