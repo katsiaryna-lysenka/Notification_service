@@ -5,45 +5,6 @@ import aio_pika
 from src.mongodb_file import process_message
 
 
-# async def consume_reset_email_messages():
-#     print("aaaaaaaaaaaaaaaaaaaaa")
-#     connection = None
-#     try:
-#         connection = await aio_pika.connect_robust("amqp://user:12345@rabbitmq:5672/")
-#         print(f"connection == {connection}")
-#
-#         async with connection:
-#             print("dddddddddddddddddddddd")
-#             channel = await connection.channel()
-#             print("iiiiiiiiiiiiiiiiiiiiii")
-#             queue = await channel.declare_queue(
-#                 "reset-password-stream", durable=True
-#             )
-#             print("eeeeeeeeeeeeeeeeee")
-#             async for message in queue:
-#                 async with message.process():
-#                     try:
-#                         message_body = json.loads(message.body)
-#                         print("Received message:")
-#                         print(message_body)
-#
-#                     except json.JSONDecodeError as e:
-#                         print("Failed to decode JSON:", e)
-#
-#                     except Exception as e:
-#                         print("An unexpected error occurred:", e)
-#
-#     except aio_pika.exceptions.AMQPConnectionError as e:
-#         print(f"connection = {connection}")
-#         print("Error connecting to RabbitMQ:", e)
-#
-#     except Exception as e:
-#         print("Type of exception:", type(e))
-#
-#     finally:
-#         if connection is not None:
-#             await connection.close()
-
 async def consume_reset_email_messages():
     print("Consuming messages from reset-password-stream...")
     connection = None

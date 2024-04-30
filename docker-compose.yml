@@ -10,9 +10,9 @@ services:
       - "8000:8000"
     depends_on:
       - mongodb
-    environment:
-      - ATLAS_URI=mongodb://mongodb:27017
-      - DB_NAME=pymongo
+#    environment:
+#      - ATLAS_URI=mongodb://mongodb:27017
+#      - DB_NAME=pymongo
     volumes:
       - .env:/app/.env
     networks:
@@ -21,9 +21,6 @@ services:
   mongodb:
     image: bitnami/mongodb:latest
     container_name: mongodb-container
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=user
-      - MONGO_INITDB_ROOT_PASSWORD=12345
     networks:
       - backend
 
