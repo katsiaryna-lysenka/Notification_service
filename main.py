@@ -1,8 +1,8 @@
 import asyncio
 
-from src.rebbitmq_file import consume_reset_email_messages
+from src.utils import execute_with_transaction
 
 
 if __name__ == "__main__":
-    asyncio.run(consume_reset_email_messages())
+    asyncio.run(execute_with_transaction())
 

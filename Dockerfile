@@ -1,5 +1,8 @@
-# Используем базовый образ Python
-FROM python:3.10.12-slim
+FROM python:3.10.12-slim AS builder
+
+LABEL authors="user"
+
+WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./
 
@@ -10,11 +13,19 @@ RUN apt-get update &&  \
     poetry config virtualenvs.create false && \
     poetry install --no-root --only main
 
-# Копируем исходный код в контейнер
-COPY . /app
+
+FROM builder
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
+
+COPY --from=builder /usr/local/lib/python3.10/site-packages/ /usr/local/lib/python3.10/site-packages/
+COPY --from=builder /usr/local/bin/poetry /usr/local/bin/poetry
+
+# Копируем исходный код в контейнер
+COPY . /app
+
+EXPOSE 8000
 
 # Запускаем main.py при старте контейнера
 CMD ["python", "-u", "main.py"]
