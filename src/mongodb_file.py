@@ -4,6 +4,7 @@ import os
 import aio_pika
 from dotenv import load_dotenv
 from pymongo import errors
+
 from src.aws_file import send_email
 
 load_dotenv(".env")
@@ -49,7 +50,10 @@ async def process_message(session, message):
 
         # If reached MAX_FAILURES, send message to dead letter queue
     if failures == MAX_FAILURES:
-        print(f"Failed to process message after {MAX_FAILURES} attempts. Sending to dead letter queue.")
+        print(
+            f"Failed to process message after {MAX_FAILURES} attempts. "
+            f"Sending to dead letter queue."
+        )
         await send_to_dead_letter_queue(session, message)
     return False
 
@@ -57,10 +61,14 @@ async def process_message(session, message):
 async def send_to_dead_letter_queue(session, message):
     try:
         # Подключение к очереди мертвых писем (Dead Letter Queue)
-        dlq_connection = await aio_pika.connect_robust(f"amqp://{RABBITMQ_USERNAME}:{RABBITMQ_PASSWORD}@{RABBITMQ_HOST}:5672/")
+        dlq_connection = await aio_pika.connect_robust(
+            f"amqp://{RABBITMQ_USERNAME}:{RABBITMQ_PASSWORD}" f"@{RABBITMQ_HOST}:5672/"
+        )
         async with dlq_connection:
             dlq_channel = await dlq_connection.channel()
-            dlq_queue = await dlq_channel.declare_queue("dead-letter-queue", durable=True)
+            dlq_queue = await dlq_channel.declare_queue(
+                "dead-letter-queue", durable=True
+            )
 
             # Отправка сообщения в очередь мертвых писем
             await dlq_queue.publish(json.dumps(message))

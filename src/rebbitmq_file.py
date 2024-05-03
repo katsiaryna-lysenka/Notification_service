@@ -1,9 +1,10 @@
 import json
 import os
-import aio_pika
 
-from dotenv import load_dotenv
+import aio_pika
 from aio_pika.exceptions import AMQPConnectionError
+from dotenv import load_dotenv
+
 from src.mongodb_file import process_message
 
 load_dotenv(".env")
@@ -17,7 +18,9 @@ async def consume_reset_email_messages(session):
     print("Consuming messages from reset-password-stream...")
     connection = None
     try:
-        connection = await aio_pika.connect_robust(f"amqp://{RABBITMQ_USERNAME}:{RABBITMQ_PASSWORD}@{RABBITMQ_HOST}:5672/")
+        connection = await aio_pika.connect_robust(
+            f"amqp://{RABBITMQ_USERNAME}:{RABBITMQ_PASSWORD}@{RABBITMQ_HOST}:5672/"
+        )
         print("Connected to RabbitMQ")
         async with connection:
             channel = await connection.channel()
@@ -57,10 +60,9 @@ async def consume_reset_email_messages(session):
 
 
 def validate_message(message):
-    required_keys = ['email', 'reset_token', 'message']
+    required_keys = ["email", "reset_token", "message"]
 
     if all(key in message for key in required_keys):
         return True
     else:
         return False
-

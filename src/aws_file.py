@@ -1,7 +1,8 @@
 import os
-from dotenv import load_dotenv
+
 import boto3
 from botocore.exceptions import ClientError
+from dotenv import load_dotenv
 
 load_dotenv(".env")
 
@@ -26,7 +27,7 @@ def create_s3_bucket(bucket_name):
             endpoint_url=s3_base_url,
             aws_access_key_id=aws_access_key_id,
             aws_secret_access_key=aws_secret_access_key,
-            verify=False
+            verify=False,
         )
 
         s3_client.create_bucket(Bucket=bucket_name)
@@ -43,10 +44,7 @@ def create_s3_bucket(bucket_name):
 
 async def send_email(subject, body, recipient):
 
-    message = {
-        'Subject': {'Data': subject},
-        'Body': {'Text': {'Data': body}}
-    }
+    message = {"Subject": {"Data": subject}, "Body": {"Text": {"Data": body}}}
 
     try:
         create_s3_bucket("my-test-bucket")
@@ -59,22 +57,21 @@ async def send_email(subject, body, recipient):
             endpoint_url=S3_BASE_URL,  # URL LocalStack
             aws_access_key_id=AWS_SECRET_KEY_ID,
             aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
-            verify=False
+            verify=False,
         )
 
-        response = ses_client.verify_email_identity(
-            EmailAddress=AWS_SES_SENDER
-        )
+        response = ses_client.verify_email_identity(EmailAddress=AWS_SES_SENDER)
 
-        print("Email address verified successfully")
+        print(f"Email address verified successfully, response = {response}")
 
         # Send email during SES
         response = ses_client.send_email(
             Source=AWS_SES_SENDER,
-            Destination={'ToAddresses': [recipient]},
-            Message=message
+            Destination={"ToAddresses": [recipient]},
+            Message=message,
         )
 
+        print(f"response = {response}")
         print("Email sent successfully")
         return True
     except ClientError as e:

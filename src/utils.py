@@ -1,6 +1,8 @@
 import os
-from pymongo import MongoClient, errors
+
 from dotenv import load_dotenv
+from pymongo import MongoClient, errors
+
 from src.rebbitmq_file import consume_reset_email_messages
 
 load_dotenv(".env")
