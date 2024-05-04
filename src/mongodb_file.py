@@ -48,7 +48,6 @@ async def process_message(session, message):
             print("Failed to save message to MongoDB:", e)
             failures += 1
 
-        # If reached MAX_FAILURES, send message to dead letter queue
     if failures == MAX_FAILURES:
         print(
             f"Failed to process message after {MAX_FAILURES} attempts. "
@@ -60,9 +59,8 @@ async def process_message(session, message):
 
 async def send_to_dead_letter_queue(session, message):
     try:
-        # Подключение к очереди мертвых писем (Dead Letter Queue)
         dlq_connection = await aio_pika.connect_robust(
-            f"amqp://{RABBITMQ_USERNAME}:{RABBITMQ_PASSWORD}" f"@{RABBITMQ_HOST}:5672/"
+            f"amqp://{RABBITMQ_USERNAME}:{RABBITMQ_PASSWORD}@{RABBITMQ_HOST}:5672/"
         )
         async with dlq_connection:
             dlq_channel = await dlq_connection.channel()
@@ -70,12 +68,11 @@ async def send_to_dead_letter_queue(session, message):
                 "dead-letter-queue", durable=True
             )
 
-            # Отправка сообщения в очередь мертвых писем
             await dlq_queue.publish(json.dumps(message))
 
             print("Message sent to dead letter queue successfully")
+            return True
 
     except Exception as e:
-        print("Failed to send message to dead letter queue:", e)
-        # Если произошла ошибка, откатываем транзакцию
-        session.abort_transaction()
+        print(f"Failed to send message to dead letter queue: {e}")
+        return False

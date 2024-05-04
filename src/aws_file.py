@@ -21,7 +21,6 @@ def create_s3_bucket(bucket_name):
         aws_access_key_id = AWS_SECRET_KEY_ID
         aws_secret_access_key = AWS_SECRET_ACCESS_KEY
 
-        # Создаем клиент S3 для LocalStack
         s3_client = boto3.client(
             "s3",
             endpoint_url=s3_base_url,
@@ -50,11 +49,10 @@ async def send_email(subject, body, recipient):
         create_s3_bucket("my-test-bucket")
         print("S3 bucket created successfully")
 
-        # Инициализация клиента SES для LocalStack
         ses_client = boto3.client(
             "ses",
             region_name=AWS_REGION,
-            endpoint_url=S3_BASE_URL,  # URL LocalStack
+            endpoint_url=S3_BASE_URL,
             aws_access_key_id=AWS_SECRET_KEY_ID,
             aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
             verify=False,
@@ -64,7 +62,6 @@ async def send_email(subject, body, recipient):
 
         print(f"Email address verified successfully, response = {response}")
 
-        # Send email during SES
         response = ses_client.send_email(
             Source=AWS_SES_SENDER,
             Destination={"ToAddresses": [recipient]},

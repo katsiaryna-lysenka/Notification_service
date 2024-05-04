@@ -14,13 +14,24 @@ services:
       - .env:/app/.env
     networks:
       - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   mongodb:
     image: bitnami/mongodb:latest
     container_name: mongodb-container
     networks:
       - backend
+    healthcheck:
+      test: ["CMD-SHELL", "mongo --eval 'db.stats()'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   backend:
     external: true
+
